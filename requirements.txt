@@ -1,15 +1,24 @@
 # Please use python V 3.7 to be compatible with all packages
-gpytorch==1.5.0
-torch==1.9.0
-scikit-learn==0.24.2
-pyyaml==5.4.1
-seaborn==0.11.2
-xgboost==1.4.0
-tqdm==4.62.1
-numpy==1.21.2
-openml==0.12.2
-catboost==0.26.1
+#gpytorch==1.5.0
+#torch==1.9.0
+#scikit-learn==0.24.2
+torch
+scikit-learn
+numpy
+#pyyaml==5.4.1
+pyyaml
+#seaborn==0.11.2
+seaborn
+#xgboost==1.4.0
+#tqdm==4.62.1
+tqdm
+#numpy==1.21.2
+#openml==0.12.2
+openml
+#catboost==0.26.1
+catboost
 # auto-sklearn==0.14.5
-hyperopt==0.2.5
-configspace==0.4.21
+#hyperopt==0.2.5
+#configspace==0.4.21
+causal-learn
 # autogluon==0.4.0
