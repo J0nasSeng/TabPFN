@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
-from simple_einet.type_checks import check_valid
+from .layers.distributions.abstract_leaf import AbstractLeaf
+from .type_checks import check_valid
 from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
 from functools import wraps
@@ -14,10 +14,10 @@ from torch import Tensor, nn
 from torch.nn import functional as F
 from torch.profiler import record_function
 
-from simple_einet.abstract_layers import logits_to_log_weights
-from simple_einet.data import Shape, get_data_shape
-from simple_einet.layers.distributions.binomial import Binomial
-from simple_einet.sampling_utils import index_one_hot, sample_categorical_differentiably
+from .abstract_layers import logits_to_log_weights
+from .data import Shape, get_data_shape
+from .layers.distributions.binomial import Binomial
+from .sampling_utils import index_one_hot, sample_categorical_differentiably
 
 
 def prof(name):

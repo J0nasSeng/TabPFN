@@ -2,7 +2,7 @@ import torch
 from torch import distributions as dist
 from torch import nn
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
+from ...layers.distributions.abstract_leaf import AbstractLeaf
 
 
 class Bernoulli(AbstractLeaf):

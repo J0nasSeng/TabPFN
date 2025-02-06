@@ -6,9 +6,9 @@ from torch import distributions as dist
 from torch import nn
 from torch.nn import functional as F
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf, dist_mode, dist_forward
-from simple_einet.sampling_utils import SamplingContext
-from simple_einet.type_checks import check_valid
+from ...layers.distributions.abstract_leaf import AbstractLeaf, dist_mode, dist_forward
+from ...sampling_utils import SamplingContext
+from ...type_checks import check_valid
 
 
 class MultivariateNormal(AbstractLeaf):

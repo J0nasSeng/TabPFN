@@ -1,5 +1,5 @@
 import logging
-from simple_einet.utils import invert_permutation
+from .utils import invert_permutation
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Type, Union, Optional
 
@@ -7,17 +7,17 @@ import numpy as np
 import torch
 from torch import nn
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
-from simple_einet.layers.einsum import (
+from .layers.distributions.abstract_leaf import AbstractLeaf
+from .layers.einsum import (
     EinsumLayer,
 )
-from simple_einet.layers.mixing import MixingLayer
-from simple_einet.layers.factorized_leaf import FactorizedLeaf, FactorizedLeafSimple
-from simple_einet.layers.linsum import LinsumLayer, LinsumLayer2
-from simple_einet.layers.product import RootProductLayer
-from simple_einet.sampling_utils import index_one_hot, sampling_context, SamplingContext
-from simple_einet.layers.sum import SumLayer
-from simple_einet.type_checks import check_valid
+from .layers.mixing import MixingLayer
+from .layers.factorized_leaf import FactorizedLeaf, FactorizedLeafSimple
+from .layers.linsum import LinsumLayer, LinsumLayer2
+from .layers.product import RootProductLayer
+from .sampling_utils import index_one_hot, sampling_context, SamplingContext
+from .layers.sum import SumLayer
+from .type_checks import check_valid
 
 logger = logging.getLogger(__name__)
 

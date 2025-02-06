@@ -5,8 +5,8 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-from simple_einet.abstract_layers import AbstractSumLayer, logits_to_log_weights
-from simple_einet.sampling_utils import SamplingContext, sample_categorical_differentiably, index_one_hot
+from ..abstract_layers import AbstractSumLayer, logits_to_log_weights
+from ..sampling_utils import SamplingContext, sample_categorical_differentiably, index_one_hot
 
 
 def logsumexp(tensors, mask=None, dim=-1):

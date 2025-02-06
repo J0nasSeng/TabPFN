@@ -3,8 +3,8 @@ from torch import distributions as dist
 from torch import nn
 from torch.nn import functional as F
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
-from simple_einet.sampling_utils import SamplingContext
+from ...layers.distributions.abstract_leaf import AbstractLeaf
+from ...sampling_utils import SamplingContext
 
 
 class Categorical(AbstractLeaf):

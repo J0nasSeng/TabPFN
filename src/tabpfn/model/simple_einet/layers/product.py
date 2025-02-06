@@ -6,9 +6,9 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from simple_einet.abstract_layers import AbstractLayer
-from simple_einet.sampling_utils import SamplingContext
-from simple_einet.type_checks import check_valid
+from ..abstract_layers import AbstractLayer
+from ..sampling_utils import SamplingContext
+from ..type_checks import check_valid
 
 logger = logging.getLogger(__name__)
 

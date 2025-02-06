@@ -5,8 +5,8 @@ import numpy as np
 import torch
 from torch import nn, Tensor
 
-from simple_einet.sampling_utils import SamplingContext
-from simple_einet.type_checks import check_valid
+from .sampling_utils import SamplingContext
+from .type_checks import check_valid
 from torch.nn import functional as F
 
 

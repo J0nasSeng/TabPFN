@@ -3,9 +3,9 @@ from typing import List
 import numpy as np
 import torch
 
-from simple_einet.abstract_layers import AbstractLayer
-from simple_einet.layers.distributions import AbstractLeaf
-from simple_einet.sampling_utils import SamplingContext, index_one_hot
+from ..abstract_layers import AbstractLayer
+from ..layers.distributions import AbstractLeaf
+from ..sampling_utils import SamplingContext, index_one_hot
 
 
 class FactorizedLeaf(AbstractLayer):

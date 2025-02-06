@@ -1,6 +1,6 @@
 from _operator import xor
-from simple_einet.data import Shape
-from simple_einet.conv_pc import ConvPc, ConvPcConfig
+from .data import Shape
+from .conv_pc import ConvPc, ConvPcConfig
 from collections import defaultdict
 from typing import List, Optional, Sequence
 
@@ -9,9 +9,9 @@ from fast_pytorch_kmeans import KMeans
 from torch import nn
 from torch.utils.data import DataLoader
 
-from simple_einet.einet import EinetConfig, Einet
-from simple_einet.layers.distributions.binomial import Binomial
-from simple_einet.type_checks import check_valid
+from .einet import EinetConfig, Einet
+from .layers.distributions.binomial import Binomial
+from .type_checks import check_valid
 
 
 class Mixture(nn.Module):

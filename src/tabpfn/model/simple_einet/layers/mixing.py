@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from simple_einet.abstract_layers import AbstractSumLayer, logits_to_log_weights
-from simple_einet.sampling_utils import SamplingContext, sample_categorical_differentiably, index_one_hot
+from ..abstract_layers import AbstractSumLayer, logits_to_log_weights
+from ..sampling_utils import SamplingContext, sample_categorical_differentiably, index_one_hot
 
 
 class MixingLayer(AbstractSumLayer):

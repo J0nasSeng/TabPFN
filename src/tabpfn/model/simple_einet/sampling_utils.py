@@ -8,7 +8,7 @@ from torch import nn
 from torch.nn import functional as F
 from tqdm import tqdm
 
-from simple_einet.utils import __HAS_EINSUM_BROADCASTING
+from .utils import __HAS_EINSUM_BROADCASTING
 
 
 @contextmanager

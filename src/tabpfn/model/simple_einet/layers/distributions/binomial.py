@@ -6,13 +6,13 @@ import torch
 from torch import distributions as dist
 from torch import nn
 
-from simple_einet.layers.distributions.abstract_leaf import (
+from ...layers.distributions.abstract_leaf import (
     AbstractLeaf,
     dist_forward,
     dist_mode,
 )
-from simple_einet.sampling_utils import SamplingContext
-from simple_einet.type_checks import check_valid
+from ...sampling_utils import SamplingContext
+from ...type_checks import check_valid
 
 
 class Binomial(AbstractLeaf):

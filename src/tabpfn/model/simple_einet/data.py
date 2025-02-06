@@ -1,6 +1,6 @@
 import time
 
-from simple_einet.layers.distributions.piecewise_linear import PiecewiseLinear
+from .layers.distributions.piecewise_linear import PiecewiseLinear
 import imageio.v3 as imageio
 import itertools
 import os
@@ -32,10 +32,10 @@ from torchvision.datasets import (
     LFWPeople,
 )
 
-from simple_einet.layers.distributions.binomial import Binomial
-from simple_einet.layers.distributions.categorical import Categorical
-from simple_einet.layers.distributions.multivariate_normal import MultivariateNormal
-from simple_einet.layers.distributions.normal import Normal, RatNormal
+from .layers.distributions.binomial import Binomial
+from .layers.distributions.categorical import Categorical
+from .layers.distributions.multivariate_normal import MultivariateNormal
+from .layers.distributions.normal import Normal, RatNormal
 
 import logging
 

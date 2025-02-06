@@ -6,11 +6,11 @@ from typing import List, Tuple
 import torch
 import tqdm
 from fast_pytorch_kmeans import KMeans
-from simple_einet.dist import DataType, Domain
-from simple_einet.histogram import _get_bin_edges_torch
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
-from simple_einet.sampling_utils import SamplingContext
-from simple_einet.type_checks import check_valid
+from ...dist import DataType, Domain
+from ...histogram import _get_bin_edges_torch
+from ...layers.distributions.abstract_leaf import AbstractLeaf
+from ...sampling_utils import SamplingContext
+from ...type_checks import check_valid
 from torch import nn
 
 logger = logging.getLogger(__name__)

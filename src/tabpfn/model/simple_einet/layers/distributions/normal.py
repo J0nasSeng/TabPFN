@@ -4,9 +4,9 @@ import torch
 from torch import distributions as dist
 from torch import nn
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
-from simple_einet.sampling_utils import SamplingContext
-from simple_einet.type_checks import check_valid
+from ...layers.distributions.abstract_leaf import AbstractLeaf
+from ...sampling_utils import SamplingContext
+from ...type_checks import check_valid
 
 
 class Normal(AbstractLeaf):

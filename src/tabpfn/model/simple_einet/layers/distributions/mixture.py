@@ -3,9 +3,9 @@ from typing import List
 import torch
 from torch import nn
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
-from simple_einet.layers.sum import SumLayer
-from simple_einet.sampling_utils import SamplingContext
+from ...layers.distributions.abstract_leaf import AbstractLeaf
+from ...layers.sum import SumLayer
+from ...sampling_utils import SamplingContext
 
 
 class Mixture(AbstractLeaf):

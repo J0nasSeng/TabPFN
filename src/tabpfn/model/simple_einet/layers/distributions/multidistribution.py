@@ -4,9 +4,9 @@ import torch
 from torch import distributions as dist
 from torch import nn
 
-from simple_einet.layers.distributions.abstract_leaf import AbstractLeaf
-from simple_einet.sampling_utils import SamplingContext
-from simple_einet.utils import invert_permutation
+from ...layers.distributions.abstract_leaf import AbstractLeaf
+from ...sampling_utils import SamplingContext
+from ...utils import invert_permutation
 
 
 class MultiDistributionLayer(AbstractLeaf):

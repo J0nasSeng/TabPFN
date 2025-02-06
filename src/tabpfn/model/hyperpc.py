@@ -17,12 +17,12 @@ from torch.utils.checkpoint import checkpoint
 
 from tabpfn.model.encoders import (
     LinearInputEncoderStep,
-    NanHandlingEncoderStep,
     SequentialEncoder,
 )
 from tabpfn.model.layer import PerFeatureEncoderLayer
 
-from simple_einet.einet import Einet, EinetConfig
+from .simple_einet.einet import Einet, EinetConfig
+from .simple_einet.layers.distributions.normal import RatNormal
 
 
 DEFAULT_EMSIZE = 128
@@ -109,6 +109,7 @@ class HyperPC(nn.Module):
         repeat_same_layer: bool = False,
         dag_pos_enc_dim: int = 0,
         features_per_group: int = 1,
+        max_features: int = 10,
         feature_positional_embedding: (
             Literal[
                 "normal_rand_vec",
@@ -127,6 +128,7 @@ class HyperPC(nn.Module):
         ) = None,
         cache_trainset_representation: bool = False,
         seed: int | None = None,
+        device: int = 0,
         # TODO: List explicitly
         **layer_kwargs: Any,
     ):
@@ -254,11 +256,15 @@ class HyperPC(nn.Module):
         elif feature_positional_embedding == "subspace":
             self.feature_positional_embedding_embeddings = nn.Linear(ninp // 4, ninp)
 
-        self.einet_cfg = EinetConfig(ninp, depth=2)
-        self.einet = Einet(self.einet_cfg)
+        self.einet_cfg = EinetConfig(ninp, depth=1, num_channels=max_features, leaf_type=RatNormal)
+        self.einet = Einet(self.einet_cfg).to(torch.device(f'cuda:{device}'))
 
-        num_pc_params = sum([p.numel() for p in self.einet.parameters()])
-        self.weight_generator = nn.Linear(ninp, num_pc_params)
+        # don't compute gradient w.r.t. PC
+        for p in self.einet.parameters():
+            p.requires_grad_(False)
+
+        num_pc_params = sum([p.numel() for p in self.einet.parameters() if p.numel() > 1])
+        self.weight_generator = nn.Linear(ninp*max_features, num_pc_params)
 
         self.dag_pos_enc_dim = dag_pos_enc_dim
         self.cached_feature_positional_embeddings: torch.Tensor | None = None
@@ -358,9 +364,10 @@ class HyperPC(nn.Module):
             assert "single_eval_pos" not in kwargs
             x = kwargs.pop("train_x")
             test_x = kwargs.pop("test_x")
+            single_eval_pos = len(x)
             if test_x is not None:
                 x = torch.cat((x, test_x), dim=0)
-            return self._forward(x, single_eval_pos=len(x), **kwargs)
+            return self._forward(x, single_eval_pos=single_eval_pos, **kwargs)
 
         raise ValueError("Unrecognized input. Please follow the doc string.")
 
@@ -474,6 +481,7 @@ class HyperPC(nn.Module):
                 **extra_encoders_args,
             ),
             "s (b f) e -> b s f e",
+            b=batch_size,
         )  # b s f 1 -> b s f e
         del x
 
@@ -506,9 +514,7 @@ class HyperPC(nn.Module):
 
         encoder_out = self.transformer_encoder(
             (
-                embedded_input
-                if not self.transformer_decoder
-                else embedded_input[:, :single_eval_pos_]
+                embedded_input[:, :single_eval_pos_]
             ),
             single_eval_pos=single_eval_pos,
             half_layers=half_layers,
@@ -516,15 +522,22 @@ class HyperPC(nn.Module):
         )  # b s f+1 e -> b s f+1 e
 
         # perform density estimation using einet forward call
-        einet_params = self.weight_generator(encoder_out)
-        start_idx = 0
-        # set parameters
-        for p in self.einet.parameters():
-            end_idx = start_idx + p.numel()
-            p.data = einet_params[start_idx:end_idx]
-            start_idx = end_idx
-        lls = self.einet(embedded_input[:, single_eval_pos_:])
-        return lls
+        einet_params = self.weight_generator(encoder_out[:, -1, :, :].reshape(batch_size, -1))
+        summed_dataset_lls = 0.0
+        # TODO: can we replace this for loop by batching PC evaluation w.r.t. the dataset axis?
+        for ds_idx in range(embedded_input.shape[0]):
+            start_idx = 0
+
+            # set parameters
+            for p in self.einet.parameters():
+                if p.numel() > 1:
+                    end_idx = start_idx + p.numel()
+                    p.data = einet_params[ds_idx, start_idx:end_idx].reshape(p.shape)
+                    start_idx = end_idx
+
+            lls = self.einet(embedded_input[ds_idx, single_eval_pos_:])
+            summed_dataset_lls += torch.sum(lls)
+        return summed_dataset_lls
 
     def add_embeddings(  # noqa: C901, PLR0912
         self,

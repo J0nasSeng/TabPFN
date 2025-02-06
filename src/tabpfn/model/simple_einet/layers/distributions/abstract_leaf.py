@@ -6,9 +6,9 @@ import numpy as np
 import torch
 from torch import distributions as dist, nn
 
-from simple_einet.abstract_layers import AbstractLayer
-from simple_einet.sampling_utils import SamplingContext, index_one_hot
-from simple_einet.type_checks import check_valid
+from ...abstract_layers import AbstractLayer
+from ...sampling_utils import SamplingContext, index_one_hot
+from ...type_checks import check_valid
 from torch.nn import functional as F
 
 logger = logging.getLogger(__name__)
@@ -57,14 +57,14 @@ def dist_mode(distribution: dist.Distribution, ctx: SamplingContext = None) -> t
         # Repeat the mode along the batch axis
         return distribution.mean.repeat(ctx.num_samples, 1, 1, 1, 1)
 
-    from simple_einet.layers.distributions.multivariate_normal import CustomMultivariateNormalDist
+    from ...layers.distributions.multivariate_normal import CustomMultivariateNormalDist
 
     if isinstance(distribution, CustomMultivariateNormalDist):
         return distribution.mpe(num_samples=ctx.num_samples)
 
-    from simple_einet.layers.distributions.normal import CustomNormal
-    from simple_einet.layers.distributions.binomial import DifferentiableBinomial
-    from simple_einet.layers.distributions.piecewise_linear import PiecewiseLinearDist
+    from ...layers.distributions.normal import CustomNormal
+    from ...layers.distributions.binomial import DifferentiableBinomial
+    from ...layers.distributions.piecewise_linear import PiecewiseLinearDist
 
     if isinstance(distribution, CustomNormal):
         # Repeat the mode along the batch axis
@@ -112,7 +112,7 @@ def dist_sample(distribution: dist.Distribution, ctx: SamplingContext = None) ->
         # Add empty last dim to make this the same dim as params
         samples = samples.unsqueeze(-1)
     else:
-        from simple_einet.layers.distributions.normal import CustomNormal
+        from ...layers.distributions.normal import CustomNormal
 
         if ctx.return_leaf_params:
             samples = distribution.get_params()

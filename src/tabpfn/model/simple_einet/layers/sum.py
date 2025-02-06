@@ -3,8 +3,8 @@ from typing import Tuple
 import numpy as np
 import torch
 
-from simple_einet.abstract_layers import AbstractSumLayer, logits_to_log_weights
-from simple_einet.sampling_utils import SamplingContext, index_one_hot, sample_categorical_differentiably
+from ..abstract_layers import AbstractSumLayer, logits_to_log_weights
+from ..sampling_utils import SamplingContext, index_one_hot, sample_categorical_differentiably
 
 
 class SumLayer(AbstractSumLayer):
