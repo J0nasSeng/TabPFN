@@ -118,7 +118,7 @@ class Einet(nn.Module):
         """Reset the leaf cache."""
         self._leaf_cache = {}
 
-    def forward(self, x: torch.Tensor, marginalized_scopes: torch.Tensor = None, cache_index: Optional[int] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, structured_params: List[torch.Tensor], marginalized_scopes: torch.Tensor = None, cache_index: Optional[int] = None) -> torch.Tensor:
         """
         Inference pass for the Einet model.
 
@@ -151,7 +151,9 @@ class Einet(nn.Module):
         if cache_index is not None and cache_index in self._leaf_cache:
             x = self._leaf_cache[cache_index]
         else:
-            x = self.leaf(x, marginalized_scopes)
+            leaf_params = structured_params[0]
+            structured_params = structured_params[1:]
+            x = self.leaf(x, leaf_params, marginalized_scopes)
 
             if cache_index is not None:  # Cache index was specified but not found in cache
                 self._leaf_cache[cache_index] = x
@@ -180,7 +182,7 @@ class Einet(nn.Module):
                 x[:, :, :, i] = x[:, self.permutation[i], :, i]
 
         # Pass through intermediate layers
-        x = self._forward_layers(x)
+        x = self._forward_layers(x, structured_params)
 
         # Merge results from the different repetitions into the channel dimension
         batch_size, features, channels, repetitions = x.size()
@@ -190,7 +192,7 @@ class Einet(nn.Module):
         # If model has multiple reptitions, perform repetition mixing
         if self.config.num_repetitions > 1:
             # Mix repetitions
-            x = self.mixing(x)
+            x = self.mixing(x, structured_params[-1])
         else:
             # Remove repetition index
             x = x.squeeze(-1)
@@ -203,7 +205,7 @@ class Einet(nn.Module):
 
         return x
 
-    def _forward_layers(self, x):
+    def _forward_layers(self, x: torch.Tensor, structured_params: List[torch.Tensor]):
         """
         Forward pass through the inner sum and product layers.
 
@@ -214,8 +216,8 @@ class Einet(nn.Module):
             torch.Tensor: Output of the last layer before the root layer.
         """
         # Forward to inner product and sum layers
-        for layer in self.layers:
-            x = layer(x)
+        for i, layer in enumerate(self.layers):
+            x = layer(x, structured_params[i])
         return x
 
     def posterior(self, x) -> torch.Tensor:

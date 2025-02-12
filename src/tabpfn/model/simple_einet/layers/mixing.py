@@ -40,7 +40,7 @@ class MixingLayer(AbstractSumLayer):
     def weight_shape(self) -> Tuple[int, ...]:
         return self.num_features, self.num_sums_out, self.num_sums_in
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor, params: torch.Tensor) -> Tensor:
         """Forward pass of the layer."""
         # Save input if input cache is enabled
         if self._is_input_cache_enabled:
@@ -58,7 +58,7 @@ class MixingLayer(AbstractSumLayer):
             x = x + dropout_indices
 
         # Get log weights
-        log_weights = logits_to_log_weights(self.logits, dim=2).unsqueeze(0)
+        log_weights = logits_to_log_weights(params, dim=2).unsqueeze(0)
         lls = torch.logsumexp(x + log_weights, dim=3)
 
         return lls

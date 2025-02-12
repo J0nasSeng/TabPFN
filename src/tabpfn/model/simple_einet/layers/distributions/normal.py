@@ -91,20 +91,20 @@ class RatNormal(AbstractLeaf):
         self.min_mean = check_valid(min_mean, float, upper_bound=max_mean, allow_none=True)
         self.max_mean = check_valid(max_mean, float, min_mean, allow_none=True)
 
-    def _get_base_distribution(self, ctx: SamplingContext = None) -> "CustomNormal":
-        means, sigma = self._project_params()
+    def _get_base_distribution(self, params: torch.Tensor, ctx: SamplingContext = None) -> "CustomNormal":
+        means, sigma = self._project_params(params)
 
         # d = dist.Normal(means, sigma)
         d = CustomNormal(means, sigma)
         return d
 
-    def _project_params(self):
+    def _project_params(self, params: torch.Tensor):
+        means, stds = params
         if self.min_sigma < self.max_sigma:
-            sigma_ratio = torch.sigmoid(self.stds)
+            sigma_ratio = torch.sigmoid(stds)
             sigma = self.min_sigma + (self.max_sigma - self.min_sigma) * sigma_ratio
         else:
             sigma = 1.0
-        means = self.means
         if self.max_mean:
             assert self.min_mean is not None
             mean_range = self.max_mean - self.min_mean

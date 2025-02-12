@@ -102,7 +102,7 @@ class EinsumLayer(AbstractSumLayer):
             self.num_sums_in,
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor, params: torch.Tensor) -> Tensor:
         """
         Einsum layer forward pass.
 
@@ -133,7 +133,7 @@ class EinsumLayer(AbstractSumLayer):
         right_prob = torch.exp(right_log_prob - right_prob_max)
 
         # Project weights into valid space
-        logits = self.logits.view(D_out, self.num_sums_out, self.num_repetitions, -1)
+        logits = params.view(D_out, self.num_sums_out, self.num_repetitions, -1)
         weights = F.softmax(logits, dim=-1)
         weights = weights.view(self.weight_shape())
 

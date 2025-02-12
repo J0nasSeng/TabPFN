@@ -256,12 +256,15 @@ class HyperPC(nn.Module):
         elif feature_positional_embedding == "subspace":
             self.feature_positional_embedding_embeddings = nn.Linear(ninp // 4, ninp)
 
-        self.einet_cfg = EinetConfig(ninp, depth=1, num_channels=max_features, leaf_type=RatNormal)
+        # learnable REPR token
+        self.repr_token = nn.Parameter(torch.randn(1, 1, ninp)).to(device)
+
+        self.einet_cfg = EinetConfig(max_features, depth=1, num_channels=1, leaf_type=RatNormal, layer_type='einsum')
         self.einet = Einet(self.einet_cfg).to(torch.device(f'cuda:{device}'))
 
-        # don't compute gradient w.r.t. PC
         for p in self.einet.parameters():
-            p.requires_grad_(False)
+            if not p.numel() > 1:
+                p.requires_grad = False
 
         num_pc_params = sum([p.numel() for p in self.einet.parameters() if p.numel() > 1])
         self.weight_generator = nn.Linear(ninp*max_features, num_pc_params)
@@ -280,6 +283,15 @@ class HyperPC(nn.Module):
         self.generator = SerializableGenerator(device=self.generator_device)
         if self.seed:  # This can be none if set outside of the model.
             self.generator.manual_seed(self.seed)
+
+    def parameters(self):
+        parameters = []
+
+        parameters += list(self.encoder.parameters())
+        parameters += list(self.transformer_encoder.parameters())
+        parameters += list(self.weight_generator.parameters())
+
+        return parameters
 
     def reset_save_peak_mem_factor(self, factor: int | None = None) -> None:
         """Sets the save_peak_mem_factor for all layers.
@@ -367,13 +379,14 @@ class HyperPC(nn.Module):
             single_eval_pos = len(x)
             if test_x is not None:
                 x = torch.cat((x, test_x), dim=0)
-            return self._forward(x, single_eval_pos=single_eval_pos, **kwargs)
+            return self._forward(x, x_test=test_x, single_eval_pos=single_eval_pos, **kwargs)
 
         raise ValueError("Unrecognized input. Please follow the doc string.")
 
     def _forward(  # noqa: PLR0912, C901
         self,
         x: torch.Tensor | dict,
+        x_test: torch.Tensor,
         # TODO(eddiebergman): Not sure if it can be None but the function seems to
         # indicate it could
         *,
@@ -399,9 +412,7 @@ class HyperPC(nn.Module):
         Returns:
             A dictionary of output tensors.
 
-            TODO: We do not have a specific y variable we want to predict, thus we don't need that one -> remove
-            TODO: We don't have to perform attention between train and test samples (one way) -> remove
-            TODO: set weights of einet
+            TODO: What about larger einets?
             TODO: What about predicting PC structure?
         """
         assert style is None
@@ -512,6 +523,11 @@ class HyperPC(nn.Module):
             )
         del embedded_x
 
+        # add a REPR token that aggregates dataset statistics
+        # NOTE: the token is shared across the sample and feature dimensions!
+        repr_token = self.repr_token.expand(batch_size, -1, num_features, -1)
+        embedded_input = torch.cat([embedded_input, repr_token], dim=1).to(embedded_input.device)
+
         encoder_out = self.transformer_encoder(
             (
                 embedded_input[:, :single_eval_pos_]
@@ -525,17 +541,21 @@ class HyperPC(nn.Module):
         einet_params = self.weight_generator(encoder_out[:, -1, :, :].reshape(batch_size, -1))
         summed_dataset_lls = 0.0
         # TODO: can we replace this for loop by batching PC evaluation w.r.t. the dataset axis?
-        for ds_idx in range(embedded_input.shape[0]):
+        for ds_idx in range(x_test.shape[1]):
             start_idx = 0
-
             # set parameters
+            einet_structured_params = []
             for p in self.einet.parameters():
                 if p.numel() > 1:
                     end_idx = start_idx + p.numel()
-                    p.data = einet_params[ds_idx, start_idx:end_idx].reshape(p.shape)
+                    einet_structured_params.append(einet_params[ds_idx, start_idx:end_idx].reshape(p.shape))
                     start_idx = end_idx
 
-            lls = self.einet(embedded_input[ds_idx, single_eval_pos_:])
+            leaf_params = einet_structured_params[:2]
+            einet_structured_params = [leaf_params] + einet_structured_params[2:]
+
+            # NOTE: Passing parameters only works for LL computation, not for sampling!
+            lls = self.einet(x_test[:, ds_idx], einet_structured_params)
             summed_dataset_lls += torch.sum(lls)
         return summed_dataset_lls
 

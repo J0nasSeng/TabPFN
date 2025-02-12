@@ -263,7 +263,7 @@ class AbstractLeaf(AbstractLayer, ABC):
 
         return x
 
-    def forward(self, x, marginalized_scopes: List[int]):
+    def forward(self, x: torch.Tensor, params: torch.Tensor, marginalized_scopes: List[int]):
         """
         Forward pass through the distribution.
 
@@ -275,7 +275,7 @@ class AbstractLeaf(AbstractLayer, ABC):
             torch.Tensor: Output tensor after marginalization.
         """
         # Forward through base distribution
-        d = self._get_base_distribution()
+        d = self._get_base_distribution(params)
         nan_mask = torch.isnan(x)
         if nan_mask.any():
             # Replace nans with some valid value
