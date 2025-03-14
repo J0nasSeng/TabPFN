@@ -368,6 +368,7 @@ class HyperPC(nn.Module):
             "train_x",
             "test_x",
             "single_eval_pos",
+            "return_params",
         }
         spurious_kwargs = set(kwargs.keys()) - supported_kwargs
         assert not spurious_kwargs, spurious_kwargs
@@ -396,6 +397,7 @@ class HyperPC(nn.Module):
         data_dags: list[Any] | None = None,
         categorical_inds: list[int] | None = None,
         half_layers: bool = False,
+        return_params: bool = False,
     ) -> Any | dict[str, torch.Tensor]:
         """The core forward pass of the model.
 
@@ -541,6 +543,7 @@ class HyperPC(nn.Module):
         einet_params = self.weight_generator(encoder_out[:, -1, :, :].reshape(batch_size, -1))
         summed_dataset_lls = 0.0
         # TODO: can we replace this for loop by batching PC evaluation w.r.t. the dataset axis?
+        all_params = []
         for ds_idx in range(x_test.shape[1]):
             start_idx = 0
             # set parameters
@@ -555,8 +558,11 @@ class HyperPC(nn.Module):
             einet_structured_params = [leaf_params] + einet_structured_params[2:]
 
             # NOTE: Passing parameters only works for LL computation, not for sampling!
+            all_params.append(einet_structured_params)
             lls = self.einet(x_test[:, ds_idx], einet_structured_params)
             summed_dataset_lls += torch.sum(lls)
+        if return_params:
+            return all_params
         return summed_dataset_lls
 
     def add_embeddings(  # noqa: C901, PLR0912

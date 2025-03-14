@@ -1,0 +1,25 @@
+{
+	"name": "hyperPC",
+	"build": {
+	  "dockerfile": "../Dockerfile",
+	  "context": ".."
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+			  "ms-python.python",
+			  "github.copilot",
+			  "ms-python.isort",
+			  "ms-python.black-formatter"
+			]
+		  },
+	  "settings": {
+		"terminal.integrated.defaultProfile.linux": "zsh"
+	  }
+	},
+	"runArgs": [
+	  "--gpus",
+	  "all",
+	  "--shm-size=20g"
+	]
+  }
